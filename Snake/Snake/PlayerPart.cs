@@ -4,17 +4,22 @@ namespace Snake
 {
     class PlayerPart
     {
-        int[] position = new int[2];
+        int[] position;
+
+        int y , x;
+        
         Point _pointPosition;
         public PlayerPart next;
         Direction direction;
 
         public bool IsMoving { get; set; }
 
-        public PlayerPart(Direction direction, params int[] position)
+        public PlayerPart(Direction direction, int y, int x)
         {
             IsMoving = true;
-            this.position = position;
+            this.y = y;
+            this.x = x;
+            position = new int[] { y, x };
             this.direction = direction;
 
             _pointPosition = new Point(position[0], position[1]);
@@ -24,6 +29,7 @@ namespace Snake
         {
             this.direction = direction;
             _pointPosition = position;
+            this.position = new int[] { position.Y, position.X };
             IsMoving = isMoving;
         }
 
@@ -59,6 +65,32 @@ namespace Snake
                 return;
             }
 
+            if (direction == Direction.Up)
+            {
+                position[0]--;
+            }
+            else if (direction == Direction.Down)
+            {
+                position[0]++;
+            }
+            else if (direction == Direction.Left)
+            {
+                position[1]--;
+            }
+            else if (direction == Direction.Right)
+            {
+                position[1]++;
+            }
+        }
+
+        public void Move(Direction direction)
+        {
+            if (!IsMoving)
+            {
+                return;
+            }
+
+            this.direction = direction;
             if (direction == Direction.Up)
             {
                 position[0]--;

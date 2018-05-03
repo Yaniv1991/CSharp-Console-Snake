@@ -13,24 +13,12 @@ namespace Snake
         int size;
         bool isGrowing;
         Point positionToGrowTo;
+        sbyte turnsToWait;
 
         PlayerPart head;
         PlayerPart tail;
-        private bool CanGrow()
-        {
-            PlayerPart part = head;
-            while (part != null)
-            {
-                if (part.Position[0] == positionToGrowTo.Y && part.Position[1] == positionToGrowTo.X)
-                {
-                    return false;
-                }
-                part = part.next;
-            }
-            return true;
-        }
+        private bool CanGrow => (--turnsToWait == -1);
 
-        //PlayerPart tail;
 
         public Direction PreviousDirection { get => previousDirection; set => previousDirection = value; }
         public int Size { get => size; }
@@ -41,103 +29,56 @@ namespace Snake
         {
             isGrowing = true;
             positionToGrowTo = position;
+            turnsToWait = (sbyte)size;
             Grow();
-            size++;
-
-
         }
 
         public void Move(Direction direction)
         {
-            //Just to make sure the player won't try to reverse
+            //Just to make sure the player won't try to reverse. Still needs work
             if (head.next != null)
             {
-                if ((int)Math.Sqrt(((int)direction - (int)previousDirection) * ((int)direction - (int)previousDirection)) == 2)
+                if ((int)Math.Sqrt(((int)direction - (int)head.next.Direction) * ((int)direction - (int)head.next.Direction)) == 2)
                 {
                     direction = previousDirection;
                 }
             }
-            ChangeDirections(direction);
-            previousDirection = direction;
-
+            
             PlayerPart playerPart = head;
-
-            int[] previousPosition = new int[2];
-            while (true)
+            Direction directionForNextPart;
+            for (int i = 0; i < size; i++)
             {
-                previousPosition = new int[] { playerPart.Position[0], playerPart.Position[1] };
+                directionForNextPart = playerPart.Direction;
+                playerPart.Move(direction);
+                direction = directionForNextPart;
 
-                if (playerPart == head)
-                {
-                    playerPart.Move();
-                }
-
-                if (playerPart.next != null)
-                {
-                    playerPart = playerPart.next;
-                    playerPart.Position = previousPosition;
-                }
-                else
-                {
-                    if (isGrowing && CanGrow())
-                    {
-                        Grow();
-                        StartToMoveTail();
-                    }
-                    break;
-                }
+                playerPart = playerPart.next;
             }
+
+            Grow();
         }
 
-        private void StartToMoveTail()
-        {
-            if (isGrowing)
-            {
-                tail.IsMoving = true;
-            }
-        }
 
         private void Grow()
         {
-            if (!CanGrow())
+            if (!CanGrow|| !isGrowing)
             {
                 return;
             }
 
             if (Tail != null)
             {
-                Tail.next = new PlayerPart(tail.Direction, positionToGrowTo, false);
+                Tail.next = new PlayerPart(tail.Direction, positionToGrowTo);
+                tail = tail.next;
             }
             else
             {
                 head.next = new PlayerPart(head.Direction, positionToGrowTo);
                 Tail = head.next;
             }
-        }
 
-
-        /// <summary>
-        /// Alright. i need to update directions for each and every part of the snake
-        /// for that i need the head to change direction. and then - the part after that should take the direction of the previous part's direction
-        /// 
-        /// </summary>
-        /// <param name="direction"></param>
-        private void ChangeDirections(Direction direction)
-        {
-            PlayerPart playerPart = head;
-            Direction nextPartDirection = head.Direction;
-            do
-            {
-                nextPartDirection = playerPart.Direction;
-                playerPart.Direction = direction;
-                direction = nextPartDirection;
-
-                if (playerPart.next != null)
-                {
-                    playerPart = playerPart.next;
-                }
-            }
-            while (playerPart.next != null);
+            size++;
+            isGrowing = false;
         }
 
         public Player()
